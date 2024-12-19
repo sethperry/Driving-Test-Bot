@@ -25,3 +25,7 @@ jobs:
 
     - name: Run the bot
       run: python driving_test_bot.py
+
+    - name: Save logs for debugging
+      if: failure()
+      run: cat driving_test_bot.log
