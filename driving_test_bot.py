@@ -5,15 +5,25 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta
+
+# Personal and sensitive details (provided by you):
+BOT_TOKEN = "7917562169:AAETjFsGYBl1-m0AquzjqUfrQ4z9wibgUeA"
+CHAT_ID = "7256447006"
+LICENSE_NUMBER = "134361060"
+CONTACT_NAME = "Seth Perry"
+CONTACT_PHONE = "0477041755"
+EMAIL = "sethperry000@gmail.com"
+CARD_NUMBER = "4934140521101920"
+CARD_EXPIRY_MONTH = "01"
+CARD_EXPIRY_YEAR = "27"
+CARD_CVV = "232"
 
 # Configure logging
 logging.basicConfig(filename='driving_test_bot.log', level=logging.INFO, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Telegram Bot API details
-BOT_TOKEN = "7917562169:AAETjFsGYBl1-m0AquzjqUfrQ4z9wibgUeA"
-CHAT_ID = "7256447006"
 
 def send_telegram_notification(message):
     """Send a notification message via Telegram."""
@@ -40,8 +50,8 @@ def find_and_book_slot():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--remote-debugging-port=9222")
 
-    # Initialize WebDriver with Chrome options
-    driver = webdriver.Chrome(options=chrome_options)
+    # Use webdriver_manager to automatically install matching ChromeDriver
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     try:
         # Step 1: Open the initial webpage
         driver.get("https://www.service.transport.qld.gov.au/SBSExternal/public/WelcomeDrivingTest.xhtml?dswid=-5059")
@@ -68,15 +78,15 @@ def find_and_book_slot():
         license_number_field = wait.until(
             EC.presence_of_element_located((By.ID, "CleanBookingDEForm:dlNumber"))
         )
-        license_number_field.send_keys("134361060")
+        license_number_field.send_keys(LICENSE_NUMBER)
         logging.info("Entered license number.")
 
         contact_name_field = driver.find_element(By.ID, "CleanBookingDEForm:contactName")
-        contact_name_field.send_keys("Seth Perry")
+        contact_name_field.send_keys(CONTACT_NAME)
         logging.info("Entered contact name.")
 
         contact_phone_field = driver.find_element(By.ID, "CleanBookingDEForm:contactPhone")
-        contact_phone_field.send_keys("0477041755")
+        contact_phone_field.send_keys(CONTACT_PHONE)
         logging.info("Entered contact phone number.")
 
         dropdown_trigger = driver.find_element(By.CLASS_NAME, "ui-selectonemenu-trigger")
@@ -104,7 +114,7 @@ def find_and_book_slot():
         location_dropdown_trigger = driver.find_element(By.CLASS_NAME, "ui-selectonemenu-trigger")
         location_dropdown_trigger.click()
         desired_location_option = wait.until(
-            EC.element_to_be_clickable((By.ID, "BookingSearchForm:region_15"))  # SEQ IPSWICH
+            EC.element_to_be_clickable((By.ID, "BookingSearchForm:region_15"))  # Example: SEQ IPSWICH (Adjust if needed)
         )
         desired_location_option.click()
         location_continue_button = wait.until(
@@ -148,7 +158,7 @@ def find_and_book_slot():
                     email_field = wait.until(
                         EC.presence_of_element_located((By.ID, "paymentOptionSelectionForm:paymentOptions:emailAddressField:emailAddress"))
                     )
-                    email_field.send_keys("sethperry000@gmail.com")
+                    email_field.send_keys(EMAIL)
                     logging.info("Entered email address.")
 
                     payment_continue_button = driver.find_element(
@@ -162,13 +172,13 @@ def find_and_book_slot():
                     card_number_field = wait.until(
                         EC.presence_of_element_located((By.ID, "CardNumber"))
                     )
-                    card_number_field.send_keys("4934140521101920")
+                    card_number_field.send_keys(CARD_NUMBER)
                     expiry_month_field = driver.find_element(By.ID, "ExpiryMonth")
-                    expiry_month_field.send_keys("01")
+                    expiry_month_field.send_keys(CARD_EXPIRY_MONTH)
                     expiry_year_field = driver.find_element(By.ID, "ExpiryYear")
-                    expiry_year_field.send_keys("27")
+                    expiry_year_field.send_keys(CARD_EXPIRY_YEAR)
                     cvv_field = driver.find_element(By.ID, "CVN")
-                    cvv_field.send_keys("232")
+                    cvv_field.send_keys(CARD_CVV)
                     logging.info("Entered card details.")
 
                     review_payment_button = driver.find_element(By.ID, "btnReviewPayment")
