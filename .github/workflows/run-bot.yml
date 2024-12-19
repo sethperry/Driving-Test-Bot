@@ -13,6 +13,15 @@ jobs:
     - name: Check out the code
       uses: actions/checkout@v2
 
+    - name: Set up Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip google-chrome-stable
+        wget -N https://chromedriver.storage.googleapis.com/$(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        sudo mv chromedriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/chromedriver
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
