@@ -3,10 +3,11 @@ name: Driving Test Bot
 on:
   schedule:
     - cron: '*/30 * * * *'  # Runs every 30 minutes
+  workflow_dispatch:        # Allows manual trigger
 
 jobs:
   run-bot:
-    runs-on: ubuntu-latest  # Use the latest Ubuntu environment
+    runs-on: ubuntu-latest
 
     steps:
     - name: Check out the code
