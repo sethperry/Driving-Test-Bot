@@ -4,7 +4,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
-import time
 
 # Telegram Bot API details
 BOT_TOKEN = "7917562169:AAETjFsGYBl1-m0AquzjqUfrQ4z9wibgUeA"
@@ -25,10 +24,8 @@ def send_telegram_notification(message):
     except requests.exceptions.RequestException as e:
         print(f"Failed to send Telegram notification: {e}")
 
-# Selenium WebDriver setup
-driver = webdriver.Chrome()
-
 def find_and_book_slot():
+    driver = webdriver.Chrome()
     try:
         # Step 1: Open the initial webpage
         driver.get("https://www.service.transport.qld.gov.au/SBSExternal/public/WelcomeDrivingTest.xhtml?dswid=-5059")
@@ -115,13 +112,59 @@ def find_and_book_slot():
                     slot_continue_button.click()
                     print("Booking confirmed. Proceeding to final confirmation.")
 
-                    send_telegram_notification(f"Driving test slot booked successfully for {slot_date_text}.")
+                    # Step 8: Final confirmation page
+                    wait.until(EC.url_contains("NewBookingConfirmation"))
+                    final_confirm_button = wait.until(
+                        EC.element_to_be_clickable((By.ID, "BookingConfirmationForm:actionFieldList:confirmButtonField:confirmButton"))
+                    )
+                    final_confirm_button.click()
+                    print("Booking successfully finalized! Proceeding to payment.")
+
+                    # Step 9: Payment email entry
+                    wait.until(EC.url_contains("ShoppingBasket"))
+                    email_field = wait.until(
+                        EC.presence_of_element_located((By.ID, "paymentOptionSelectionForm:paymentOptions:emailAddressField:emailAddress"))
+                    )
+                    email_field.send_keys("sethperry000@gmail.com")
+                    print("Entered email address.")
+
+                    payment_continue_button = driver.find_element(
+                        By.ID, "paymentOptionSelectionForm:buttonFieldList:payNowField:payNowButton"
+                    )
+                    payment_continue_button.click()
+                    print("Payment process initiated. Proceeding to card entry.")
+
+                    # Step 10: Payment card entry
+                    wait.until(EC.url_contains("bpoint"))
+                    card_number_field = wait.until(
+                        EC.presence_of_element_located((By.ID, "CardNumber"))
+                    )
+                    card_number_field.send_keys("4934140521101920")
+                    expiry_month_field = driver.find_element(By.ID, "ExpiryMonth")
+                    expiry_month_field.send_keys("01")
+                    expiry_year_field = driver.find_element(By.ID, "ExpiryYear")
+                    expiry_year_field.send_keys("27")
+                    cvv_field = driver.find_element(By.ID, "CVN")
+                    cvv_field.send_keys("232")
+
+                    review_payment_button = driver.find_element(By.ID, "btnReviewPayment")
+                    review_payment_button.click()
+                    print("Clicked 'Next' on payment page.")
+
+                    # Step 11: Final Pay Button
+                    pay_button = wait.until(
+                        EC.element_to_be_clickable((By.ID, "btnProcessPayment"))
+                    )
+                    pay_button.click()
+                    print("Payment processed successfully. Booking complete!")
+
+                    send_telegram_notification(f"Driving test slot booked successfully for {slot_date_text}. Payment processed!")
                     return True
             except ValueError:
                 continue
 
-        print("No suitable slots found. Will check again in 30 minutes.")
-        send_telegram_notification("No suitable driving test slots were found. Retrying in 30 minutes.")
+        print("No suitable slots found.")
+        send_telegram_notification("No suitable driving test slots were found. Retrying later.")
         return False
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
@@ -130,8 +173,7 @@ def find_and_book_slot():
         driver.quit()
 
 if __name__ == "__main__":
-    while True:
-        if find_and_book_slot():
-            print("Test booked successfully. Exiting bot.")
-            break
-        time.sleep(1800)
+    if find_and_book_slot():
+        print("Test booked successfully.")
+    else:
+        print("No suitable slots found.")
