@@ -4,6 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 from datetime import datetime, timedelta
 
 # Configure logging
@@ -31,7 +32,16 @@ def send_telegram_notification(message):
         print(f"Failed to send Telegram notification: {e}")
 
 def find_and_book_slot():
-    driver = webdriver.Chrome()
+    # Configure Chrome options for headless mode
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--remote-debugging-port=9222")
+
+    # Initialize WebDriver with Chrome options
+    driver = webdriver.Chrome(options=chrome_options)
     try:
         # Step 1: Open the initial webpage
         driver.get("https://www.service.transport.qld.gov.au/SBSExternal/public/WelcomeDrivingTest.xhtml?dswid=-5059")
